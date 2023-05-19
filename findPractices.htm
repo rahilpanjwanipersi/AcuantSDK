@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<script src="../script/awsdk.js"></script>
+<script>
+    // var key = this.GLOBAL_VARS.AmWellSDKAPIKey;
+    //var url = this.GLOBAL_VARS.AmwellBaseURL;
+
+    const config = {
+        sdkApiKey: '3032e74c',
+        baseUrl: 'https://iot131.amwellintegration.com/',
+        locale: 'en_US'
+    };
+
+
+    const AWSDK = this.awsdk.default.AWSDK;
+    const sdk = new AWSDK();
+
+    sdk.initialize(config).then((initialized) => {
+        findPracticesByType();
+    });
+
+    function findPracticesByType() {
+        sdk.practiceService.findPracticesByType().then((practiceList) => {
+            //console.log(practiceList);
+            practiceList.forEach(element => {
+                const practiceJSON = JSON.parse(element);
+                //console.log(practiceJSON);
+                var practiceString = 'Name: ' + practiceJSON.name + ', Type: ' + practiceJSON.practiceType;
+                //document.getElementById('practice-list').innerHTML = practiceString;
+                var practiceNode = document.createTextNode(practiceString);
+                document.getElementById('practice-list').appendChild(practiceNode);
+            });
+            var samplePractice = practiceList[0];
+            getPracticeDetails(samplePractice);
+        });
+    }
+
+    function getPracticeDetails(samplePractice) {
+        console.log("Practice details start")
+        sdk.practiceService.getPracticeDetails(samplePractice).then((practiceDetails) => {
+            practiceDetailsJSON = JSON.parse(practiceDetails);
+            console.log(practiceDetailsJSON);
+            document.getElementById('details-header').innerHTML = practiceDetailsJSON.name + ' Details';
+
+            var availableModalities = '';
+            practiceDetailsJSON.availableModalities.forEach(element => {
+                availableModalities = availableModalities + element.localizedDisplayName + ' ';
+            });
+
+            var detailsString = practiceDetailsJSON.welcomeMessage + 
+                                '<br>Address: ' + practiceDetailsJSON.address +
+                                '<br>Ph No: ' + practiceDetailsJSON.formattedPhone +
+                                '<br>Fax No: ' + practiceDetailsJSON.formattedFax + 
+                                '<br>Hours: ' + practiceDetailsJSON.hours + 
+                                '<br>Available Modalitites: ' + availableModalities;
+            document.getElementById('practice-details').innerHTML = detailsString;
+        });
+    }
+
+    function getNewPracticeSearchCriteria() {
+
+    }
+
+    function findPractices() {
+        
+    }
+
+</script>
+
+<body>
+    <h2>Practices</h2>
+    <p id="practice-list"></p>
+    <h4 id="details-header"></h4>
+    <p id="practice-details"></p>
+</body>
+<html>
